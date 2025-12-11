@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration for k8s-dra-driver-gpu
+# This driver is typically installed via Helm (see upstream/install.sh)
+# Kustomize patches can be applied through overlays
+
+namespace: nvidia-dra-driver-gpu
+
+resources:
+  - namespace.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: k8s-dra-driver-gpu
+      app.kubernetes.io/part-of: ml-platform
+    includeSelectors: false
+

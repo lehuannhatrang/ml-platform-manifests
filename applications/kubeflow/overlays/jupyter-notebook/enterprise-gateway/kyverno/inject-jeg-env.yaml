@@ -1,0 +1,40 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: inject-jeg-url
+  annotations:
+    policies.kyverno.io/title: Inject Jupyter Enterprise Gateway URL
+    policies.kyverno.io/category: Kubeflow
+    policies.kyverno.io/description: >-
+      Automatically connects all Kubeflow Notebooks to the central 
+      Jupyter Enterprise Gateway by injecting the required environment variables.
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: inject-gateway-env
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            # We explicitly target pods that have the 'notebook-name' label.
+            # This is the standard label added by Kubeflow's Notebook Controller.
+            selector:
+              matchExpressions:
+              - key: notebook-name
+                operator: Exists
+      mutate:
+        patchStrategicMerge:
+          spec:
+            containers:
+            - (name): "*"
+              env:
+              - name: JUPYTER_GATEWAY_URL
+                value: "http://enterprise-gateway.enterprise-gateway:8888"
+              - name: JUPYTER_GATEWAY_REQUEST_TIMEOUT
+                value: "1800"
+              - name: KERNEL_GPUS
+                value: "1"
+              - name: KERNEL_GPUS_LIMIT
+                value: "1"

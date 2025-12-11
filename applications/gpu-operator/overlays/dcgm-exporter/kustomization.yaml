@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gpu-operator
+
+resources:
+  - clusterrole/dra-clusterrole.yaml
+  - daemonset/nvidia-dcgm-exporter.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: gpu-operator
+      app.kubernetes.io/component: dcgm-exporter
+    includeSelectors: false
+

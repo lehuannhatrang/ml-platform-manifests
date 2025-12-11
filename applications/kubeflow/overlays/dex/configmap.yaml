@@ -1,0 +1,48 @@
+apiVersion: v1
+data:
+  config.yaml: |
+    issuer: http://{{INGRESS_HOST}}:32269/dex
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      http: 0.0.0.0:5556
+    logger:
+      level: "debug"
+      format: text
+    oauth2:
+      skipApprovalScreen: true
+    enablePasswordDB: false
+    # staticPasswords:
+    # - email: user@example.com
+    #   hashFromEnv: DEX_USER_PASSWORD
+    #   username: user
+    #   userID: "15841185641784"
+    staticClients:
+    # https://github.com/dexidp/dex/pull/1664
+    - idEnv: OIDC_CLIENT_ID
+      redirectURIs: ["/oauth2/callback"]
+      name: 'Dex Login Application'
+      secretEnv: OIDC_CLIENT_SECRET
+    connectors:
+    - type: oidc
+      id: keycloak
+      name: keycloak
+      config:
+        issuer: http://{{KEYCLOAK_HOST}}:32008/realms/ml-platform
+        clientID: kubeflow-oidc-authservice
+        clientSecret: {{ OIDC_CLIENT_SECRET }}
+        redirectURI: http://{{INGRESS_HOST}}:32269/dex/callback
+        insecure: true
+        insecureSkipEmailVerified: true
+        userNameKey: email       
+        scopes:
+          - openid
+          - profile
+          - email
+          - offline_access
+kind: ConfigMap
+metadata:
+  name: dex
+  namespace: auth

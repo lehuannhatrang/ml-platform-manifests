@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration for kubeflow
+# Upstream manifests should be placed in ../upstream/ directory
+# This base can be extended by overlays
+
+namespace: kubeflow
+
+resources:
+  - namespace.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: kubeflow
+      app.kubernetes.io/part-of: ml-platform
+    includeSelectors: false
+

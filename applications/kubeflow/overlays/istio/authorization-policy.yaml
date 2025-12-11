@@ -1,0 +1,45 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ml-platform-backend-auth
+  namespace: kubeflow
+  labels:
+    app: ml-platform
+    component: backend
+spec:
+  selector:
+    matchLabels:
+      app: ml-platform
+      component: backend
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            paths: ["/health"]
+    - when:
+        - key: request.headers[kubeflow-userid]
+          notValues: [""]
+      from:
+        - source:
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ml-platform-frontend-auth
+  namespace: kubeflow
+  labels:
+    app: ml-platform
+    component: frontend
+spec:
+  selector:
+    matchLabels:
+      app: ml-platform
+      component: frontend
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"

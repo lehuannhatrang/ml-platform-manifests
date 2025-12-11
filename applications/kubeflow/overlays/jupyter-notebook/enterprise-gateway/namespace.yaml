@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: enterprise-gateway
+  labels:
+    app.kubernetes.io/name: enterprise-gateway
+    app.kubernetes.io/part-of: kubeflow
+

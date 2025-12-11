@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: kf-training-job-ui
+  namespace: kubeflow
+  labels:
+    app: ml-platform
+    component: frontend
+spec:
+  gateways:
+    - kubeflow/kubeflow-gateway
+  hosts:
+    - '*'
+  http:
+    - headers:
+        request:
+          add:
+            x-forwarded-prefix: /training-job
+      match:
+        - uri:
+            prefix: /training-job/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: training-job-web-app-service.kubeflow.svc.cluster.local
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /api/training-job/
+      rewrite:
+        uri: /api/
+      route:
+        - destination:
+            host: ml-platform-backend.kubeflow.svc.cluster.local
+            port:
+              number: 8080
+

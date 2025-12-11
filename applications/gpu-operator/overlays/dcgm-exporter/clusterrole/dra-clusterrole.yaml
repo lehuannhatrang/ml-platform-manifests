@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dcgm-exporter-full-access
+rules:
+# Fixes the "forbidden: cannot get resource pods" error
+- apiGroups: [""]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list", "watch"]
+# Enables the DRA metrics feature
+- apiGroups: ["resource.k8s.io"]
+  resources: ["resourceslices"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dcgm-exporter-full-access-binding
+subjects:
+- kind: ServiceAccount
+  # This name comes directly from your error log
+  name: nvidia-dcgm-exporter
+  namespace: gpu-operator
+roleRef:
+  kind: ClusterRole
+  name: dcgm-exporter-full-access
+  apiGroup: rbac.authorization.k8s.io
