@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration for minio
+# Upstream manifests should be placed in ../upstream/ directory
+# This base can be extended by overlays
+
+namespace: minio
+
+resources:
+  - namespace.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: minio
+      app.kubernetes.io/part-of: ml-platform
+    includeSelectors: false
+
