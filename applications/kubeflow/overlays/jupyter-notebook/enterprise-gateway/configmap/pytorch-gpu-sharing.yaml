@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kernel-spec-tf-gpu-sharing
+  name: kernel-spec-pytorch-gpu-sharing
   namespace: enterprise-gateway
 data:
   kernel-pod.yaml.j2: >
@@ -80,12 +80,12 @@ data:
   kernel.json: >
     {
         "language": "python",
-        "display_name": "TensorFlow with shared GPU",
+        "display_name": "PyTorch with shared GPU",
         "metadata": {
             "process_proxy": {
             "class_name": "enterprise_gateway.services.processproxies.k8s.KubernetesProcessProxy",
             "config": {
-                "image_name": "elyra/kernel-tf-gpu-py:3.2.3"
+                "image_name": "192.168.40.246:30080/khamb/jupyter_kernel_torch_cuda:latest"
             }
             },
             "debugger": true
@@ -93,7 +93,7 @@ data:
         "env": {},
         "argv": [
             "python",
-            "/usr/local/share/jupyter/kernels/tf_gpu_sharing/launch_kubernetes.py",
+            "/usr/local/share/jupyter/kernels/pytorch_gpu_sharing/launch_kubernetes.py",
             "--RemoteProcessProxy.kernel-id",
             "{kernel_id}",
             "--RemoteProcessProxy.port-range",
