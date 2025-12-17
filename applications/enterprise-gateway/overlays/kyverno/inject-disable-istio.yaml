@@ -1,0 +1,31 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disable-istio-sidecar-for-kernels
+  annotations:
+    policies.kyverno.io/title: Disable Istio Sidecar for Kernel Pods
+    policies.kyverno.io/category: Istio
+    policies.kyverno.io/description: >-
+      Injects the sidecar.istio.io/inject: "false" annotation to prevent 
+      Istio sidecar injection on Jupyter kernel pods.
+spec:
+  rules:
+  - name: inject-sidecar-false
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          # ⚠️ CRITICAL: Adjust this selector to match your specific Kernel pods.
+          # If you remove this selector, this rule will disable Istio on ALL pods.
+          selector:
+            matchLabels:
+              # Common label for Jupyter Enterprise Gateway kernels
+              component: kernel 
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          annotations:
+            # The +(...) syntax ensures we add the annotation if missing,
+            # or update it if it exists.
+            +(sidecar.istio.io/inject): "false"

@@ -41,7 +41,7 @@ spec:
 
             # 3. COPY DEFAULT KERNELS (Restore specific defaults)
             echo "[3/4] Copying specific defaults..."
-            KERNELS_TO_COPY="r_kubernetes python_kubernetes python_tf_kubernetes scala_kubernetes spark_r_kubernetes spark_python_kubernetes spark_scala_kubernetes spark_python_operator"
+            KERNELS_TO_COPY="r_kubernetes python_kubernetes python_tf_kubernetes python_tf_gpu_kubernetes scala_kubernetes spark_r_kubernetes spark_python_kubernetes spark_scala_kubernetes spark_python_operator"
             
             for KERNEL in $KERNELS_TO_COPY; do
               if [ -d "$SOURCE_DEFAULTS/$KERNEL" ]; then
@@ -67,6 +67,14 @@ spec:
             install_custom_kernel "/mnt/configmap-tf-4gb" "tf_gpu_sharing_4GB"
             install_custom_kernel "/mnt/configmap-pytorch-8gb" "pytorch_gpu_sharing_8GB"
             install_custom_kernel "/mnt/configmap-tf-8gb" "tf_gpu_sharing_8GB"
+
+            # 4.1 Install Pytorch GPU all
+            mkdir -p $TARGET_DIR/pytorch_gpu_sharing_all
+            cp /mnt/configmap-pytorch-all/kernel.json $TARGET_DIR/pytorch_gpu_sharing_all/
+            cp /mnt/configmap-pytorch-all/kernel-pod.yaml.j2 $TARGET_DIR/pytorch_gpu_sharing_all/
+            cp /mnt/configmap-pytorch-all/launch_kubernetes.py $TARGET_DIR/pytorch_gpu_sharing_all/
+            chmod +x $TARGET_DIR/pytorch_gpu_sharing_all/launch_kubernetes.py
+            echo " - Installed Pytorch GPU all"
 
             # 5. PERMISSIONS FIX (Root -> Jovyan)
             # This is critical so the Kernel Pod (running as jovyan) can read the file
@@ -95,7 +103,8 @@ spec:
           mountPath: /mnt/configmap-pytorch-8gb
         - name: cm-tf-8gb
           mountPath: /mnt/configmap-tf-8gb
-
+        - name: cm-pytorch-all
+          mountPath: /mnt/configmap-pytorch-all
       volumes:
       - name: kernels-pvc
         persistentVolumeClaim:
@@ -124,5 +133,7 @@ spec:
       - name: cm-tf-8gb
         configMap:
           name: kernel-spec-tf-gpu-8gb
-
+      - name: cm-pytorch-all
+        configMap:
+          name: kernel-spec-pytorch-gpu-all
       restartPolicy: OnFailure
