@@ -114,9 +114,28 @@ sudo ./init-cluster.sh
 sudo kubeadm join <control-plane>:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>
 ```
 
-### Step 1: Install Platform Components
+### Step 0.5: Install NFS Utilities (All Nodes)
+
+Ensure `nfs-common` (or `nfs-utils`) is installed on **all Kubernetes nodes** to allow mounting NFS volumes.
 
 ```bash
+# On Ubuntu/Debian
+sudo apt-get update && sudo apt-get install -y nfs-common
+
+# On RHEL/CentOS
+sudo yum install -y nfs-utils
+```
+
+### Step 1: Install Platform Components
+
+
+```bash
+# 0. Storage Provisioner (REQUIRED for Keycloak)
+# 0. Storage Provisioner (REQUIRED for Keycloak)
+# By default, it auto-detects the Control Plane IP and uses /srv/nfs/kubedata.
+# To override: export NFS_SERVER="x.x.x.x" NFS_PATH="/path/to/share"
+./applications/nfs-provisioner/upstream/install.sh
+
 # 1. Identity & Access
 ./applications/keycloak/upstream/install.sh
 ./applications/kyverno/upstream/install.sh

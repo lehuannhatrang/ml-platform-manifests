@@ -8,6 +8,7 @@ namespace: keycloak
 resources:
   - namespace.yaml
   - services.yaml
+  - pvc-postgres.yaml
   - deployment-postgres.yaml
   - statefulset-keycloak.yaml
 labels:
