@@ -1,13 +1,21 @@
-USER-SUPPLIED VALUES:
-USER-SUPPLIED VALUES: null
+global:
+  gpuSharing: true
+  resourceReservation:
+    appLabel: kai-rs
 admission:
   gpuPodRuntimeClassName: nvidia-cdi
 binder:
-  cdi: true
+  cdiEnabled: true
   resourceReservation:
     runtimeClassName: nvidia-cdi
-global:
-  gpuSharing: true
+    appLabel: kai-rs
+  additionalArgs:
+    - "--feature-gates=DynamicResourceAllocation=false"
+scheduler:
+  additionalArgs:
+    - "--feature-gates=DynamicResourceAllocation=false"
+
+
 
 
 

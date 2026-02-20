@@ -94,7 +94,7 @@ data:
             "debugger": true
         },
         "env": {
-            "KERNEL_GPU_TYPE": "RTX-3090-Ti"
+            "KERNEL_GPU_TYPE": "V100"
         },
         "argv": [
             "python",

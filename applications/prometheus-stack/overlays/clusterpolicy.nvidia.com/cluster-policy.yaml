@@ -4,8 +4,6 @@ metadata:
   annotations:
     meta.helm.sh/release-name: gpu-operator
     meta.helm.sh/release-namespace: gpu-operator
-  creationTimestamp: "2025-11-20T00:23:20Z"
-  generation: 5
   labels:
     app.kubernetes.io/component: gpu-operator
     app.kubernetes.io/instance: gpu-operator

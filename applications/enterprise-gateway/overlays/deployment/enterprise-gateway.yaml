@@ -43,7 +43,7 @@ spec:
             - name: EG_CULL_INTERVAL
               value: "60"
             - name: EG_CULL_IDLE_TIMEOUT
-              value: "300"
+              value: "900"
             - name: EG_CULL_CONNECTED
               value: "True"
             - name: EG_LOG_LEVEL
