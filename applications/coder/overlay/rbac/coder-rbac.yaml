@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: coder-workspace-provisioner
+rules:
+- apiGroups: [""]
+  resources: ["pods", "persistentvolumeclaims", "secrets", "configmaps", "events"]
+  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: coder-workspace-provisioner-binding
+subjects:
+- kind: ServiceAccount
+  name: coder
+  namespace: coder
+roleRef:
+  kind: ClusterRole
+  name: coder-workspace-provisioner
+  apiGroup: rbac.authorization.k8s.io

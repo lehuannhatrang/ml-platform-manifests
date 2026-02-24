@@ -1,0 +1,11 @@
+image:
+  repository: bitnamilegacy/postgresql
+
+auth:
+  username: coder
+  password: coder
+  database: coder
+
+primary:
+  persistence:
+    size: 10Gi

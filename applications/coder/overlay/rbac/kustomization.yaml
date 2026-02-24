@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# RBAC for Coder workspace provisioner
+# Grants the Coder service account permissions to create/manage
+# workspace pods, PVCs, secrets, and configmaps across namespaces.
+
+resources:
+  - coder-rbac.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: coder
+      app.kubernetes.io/part-of: ml-platform
+      app.kubernetes.io/component: rbac
+    includeSelectors: false
