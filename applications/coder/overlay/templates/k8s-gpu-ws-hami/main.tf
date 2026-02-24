@@ -131,20 +131,10 @@ resource "kubernetes_pod" "workspace" {
   metadata {
     name      = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
     namespace = local.kubeflow_namespace
-    
-    # Integrate Kai Scheduler Queue
-    labels = {
-      "kai.scheduler/queue" = "${local.kubeflow_namespace}-queue"
-    }
-    
-    annotations = {
-      "gpu-memory" = tostring(data.coder_parameter.gpu_memory.value)
-    }
   }
 
   spec {
     # Configure Scheduler and CDI for GPU
-    scheduler_name     = "kai-scheduler"
     runtime_class_name = "nvidia-cdi"
 
     # Require Node containing the GPU type selected by the User in the Parameter
@@ -173,6 +163,12 @@ resource "kubernetes_pod" "workspace" {
       volume_mount {
         name       = "workspace-data"
         mount_path = "/home/coder/workspace"
+      }
+      resources {
+        limits = {
+            "nvidia.com/gpu"    = "1"
+            "nvidia.com/gpumem" = tostring(data.coder_parameter.gpu_memory.value)
+        }
       }
     }
 
