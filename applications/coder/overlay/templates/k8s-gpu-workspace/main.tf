@@ -41,6 +41,7 @@ locals {
 
   # Default Image configuration
   container_image = "docker.io/pytorch/pytorch:2.4.1-cuda12.1-cudnn9-runtime"
+  # container_image = "192.168.40.246:30080/khamb/jupyter_kernel_torch_cuda:latest"
 }
 
 # Create Parameter (Dropdown menu) for User to select GPU type
@@ -141,6 +142,7 @@ resource "kubernetes_pod" "workspace" {
       
       # Startup command (Note: Your Image MUST have curl or wget installed for the Agent to download the binary file)
       command = ["sh", "-c", "apt-get update && apt-get install -y curl wget && ${coder_agent.main.init_script}"]
+      # command = ["sh", "-c", coder_agent.main.init_script]
       
       security_context {
         run_as_user = "0" # Run as root by default (can be adjusted depending on Lab policy)
