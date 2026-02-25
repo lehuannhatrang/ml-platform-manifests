@@ -45,7 +45,7 @@ sudo kubeadm join <control-plane>:6443 --token <token> --discovery-token-ca-cert
 |---------|-------------|
 | **DRA** | Dynamic Resource Allocation for fine-grained GPU scheduling |
 | **resource.k8s.io/v1beta1** | DRA API for ResourceSlices, ResourceClaims |
-| **containerd** | Container runtime with systemd cgroup driver |
+| **CRI-O** | Container runtime with systemd cgroup driver |
 | **IPVS** | kube-proxy in IPVS mode for better performance |
 
 ## Version

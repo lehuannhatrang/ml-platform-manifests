@@ -2,7 +2,7 @@
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: JoinConfiguration
 nodeRegistration:
-  criSocket: unix:///var/run/containerd/containerd.sock
+  criSocket: unix:///var/run/crio/crio.sock
   imagePullPolicy: IfNotPresent
   imagePullSerial: true
 discovery:
@@ -16,7 +16,7 @@ discovery:
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
-containerRuntimeEndpoint: unix:///var/run/containerd/containerd.sock
+containerRuntimeEndpoint: unix:///var/run/crio/crio.sock
 featureGates:
   DynamicResourceAllocation: true
 runtimeRequestTimeout: "15m"

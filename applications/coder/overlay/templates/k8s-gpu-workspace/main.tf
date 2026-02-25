@@ -2,7 +2,7 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "~> 0.17.0"
+      version = "~> 2.10"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -24,13 +24,14 @@ provider "kubernetes" {
 
 # Get current logged-in user information
 data "coder_workspace" "me" {}
+data "coder_workspace_owner" "me" {}
 
 # Scan all K8s Nodes to get the actual list of GPU cards
 data "kubernetes_nodes" "all" {}
 
 locals {
   # Calculate Kubeflow Namespace from Email (e.g., huanle@gmail.com -> huanle-gmail-com)
-  user_email         = data.coder_workspace.me.owner_email
+  user_email         = data.coder_workspace_owner.me.email
   kubeflow_namespace = local.user_email == "" ? "dry-run-user" : replace(replace(local.user_email, "@", "-"), ".", "-")
 
   # Filter the list of existing "gpu-type" labels on the Cluster (remove duplicates)
@@ -42,16 +43,26 @@ locals {
   # Default Image configuration
   # container_image = "docker.io/pytorch/pytorch:2.4.1-cuda12.1-cudnn9-runtime"
   container_image = "192.168.40.246:30080/khamb/jupyter_kernel_torch_cuda:latest"
+
+  # Whether GPU is enabled ("none" means CPU-only)
+  use_gpu = data.coder_parameter.kernel_gpu_type.value != "none"
 }
 
-# Create Parameter (Dropdown menu) for User to select GPU type
+# Create Parameter (Dropdown menu) for User to select GPU type or None for CPU-only
 data "coder_parameter" "kernel_gpu_type" {
   name         = "kernel_gpu_type"
-  display_name = "GPU Type (Node Selector)"
-  description  = "Select the GPU card to use. This list is automatically scanned from the Cluster."
-  default      = length(local.gpu_types) > 0 ? local.gpu_types[0] : ""
+  display_name = "GPU Type"
+  description  = "Select the GPU card to use, or 'None' for a CPU-only workspace. GPU list is automatically scanned from the Cluster."
+  type         = "string"
+  default      = "none"
   icon         = "/icon/memory.svg"
+  form_type    = "dropdown"
   
+  option {
+    name  = "None (CPU Only)"
+    value = "none"
+  }
+
   # Automatically generate Options based on current hardware configuration
   dynamic "option" {
     for_each = local.gpu_types
@@ -61,6 +72,7 @@ data "coder_parameter" "kernel_gpu_type" {
     }
   }
   mutable     = true
+  order        = 3
 }
 
 data "coder_parameter" "gpu_memory" {
@@ -73,16 +85,55 @@ data "coder_parameter" "gpu_memory" {
 
   # mutable = true allows users to change the VRAM amount each time they Stop and Start the Workspace
   mutable      = true
+  order        = 4
+  styling      = jsonencode({
+    disabled = data.coder_parameter.kernel_gpu_type.value == "none"
+  })
+}
+
+# Parameter for CPU request
+data "coder_parameter" "cpu" {
+  name         = "cpu"
+  display_name = "CPU Cores"
+  description  = "Number of CPU cores to allocate for the Pod."
+  default      = "2"
+  type         = "number"
+  icon         = "/icon/memory.svg"
+  mutable      = true
+  order        = 1
+
+  validation {
+    min = 1
+    max = 64
+  }
+}
+
+# Parameter for Memory request
+data "coder_parameter" "memory" {
+  name         = "memory"
+  display_name = "Memory (GiB)"
+  description  = "Amount of RAM to allocate for the Pod."
+  default      = "4"
+  type         = "number"
+  icon         = "/icon/database.svg"
+  mutable      = true
+  order        = 2
+
+  validation {
+    min = 1
+    max = 256
+  }
 }
 
 data "coder_parameter" "workspace_storage" {
   name         = "workspace_storage"
   display_name = "Workspace Storage (GiB)"
-  description  = "Enter the amount of storage to allocate (e.g., 20, 50, 100). Note: Storage size cannot be decreased after creation."
-  default      = "20"
+  description  = "Enter the amount of storage to allocate (e.g., 20, 50, 100)."
+  default      = "10"
   type         = "string"
   icon         = "/icon/database.svg"
   mutable      = true 
+  order        = 5
   
   validation {
     regex = "^([1-9][0-9]|[1-4][0-9]{2}|500)$"
@@ -107,7 +158,7 @@ resource "coder_agent" "main" {
 # PVC: Persistent storage volume (persists even when Workspace is stopped)
 resource "kubernetes_persistent_volume_claim" "workspace_data" {
   metadata {
-    name      = "coder-pvc-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
+    name      = "coder-pvc-${lower(data.coder_workspace_owner.me.name)}-${lower(data.coder_workspace.me.name)}"
     namespace = local.kubeflow_namespace
   }
   spec {
@@ -126,31 +177,31 @@ resource "kubernetes_persistent_volume_claim" "workspace_data" {
 
 resource "kubernetes_pod" "workspace" {
   # Crucial: Only create the Pod in K8s when the user starts the workspace
-  count = data.coder_workspace.me.transition == "start" ? 1 : 0
+  count = data.coder_workspace.me.start_count > 0 ? 1 : 0
 
   metadata {
-    name      = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}"
+    name      = "coder-${lower(data.coder_workspace_owner.me.name)}-${lower(data.coder_workspace.me.name)}"
     namespace = local.kubeflow_namespace
     
-    # Integrate Kai Scheduler Queue
-    labels = {
+    # Integrate Kai Scheduler Queue (only when GPU is enabled)
+    labels = local.use_gpu ? {
       "kai.scheduler/queue" = "${local.kubeflow_namespace}-queue"
-    }
+    } : {}
     
-    annotations = {
+    annotations = local.use_gpu ? {
       "gpu-memory" = tostring(data.coder_parameter.gpu_memory.value)
-    }
+    } : {}
   }
 
   spec {
-    # Configure Scheduler and CDI for GPU
-    scheduler_name     = "kai-scheduler"
-    runtime_class_name = "nvidia-cdi"
+    # Configure Scheduler and CDI for GPU (only when GPU is enabled)
+    scheduler_name     = local.use_gpu ? "kai-scheduler" : null
+    runtime_class_name = local.use_gpu ? "nvidia-cdi" : null
 
-    # Require Node containing the GPU type selected by the User in the Parameter
-    node_selector = {
+    # Require Node containing the GPU type selected by the User in the Parameter (only when GPU is enabled)
+    node_selector = local.use_gpu ? {
       "gpu-type" = data.coder_parameter.kernel_gpu_type.value
-    }
+    } : {}
 
     container {
       name    = "dev"
@@ -162,6 +213,18 @@ resource "kubernetes_pod" "workspace" {
       
       security_context {
         run_as_user = "0" # Run as root by default (can be adjusted depending on Lab policy)
+      }
+
+      # CPU and Memory resource requests
+      resources {
+        requests = {
+          cpu    = "${data.coder_parameter.cpu.value}"
+          memory = "${data.coder_parameter.memory.value}Gi"
+        }
+        limits = {
+          cpu    = "${data.coder_parameter.cpu.value}"
+          memory = "${data.coder_parameter.memory.value}Gi"
+        }
       }
 
       env {

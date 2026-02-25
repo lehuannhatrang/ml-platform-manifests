@@ -30,33 +30,24 @@ EOF
 
 sysctl --system
 
-# Install containerd
-echo "Installing containerd..."
+# Install CRI-O
+echo "Installing CRI-O..."
+CRIO_VERSION="v1.34"
 apt-get update
 apt-get install -y ca-certificates curl gnupg
 
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
+curl -fsSL https://download.opensuse.org/repositories/isv:/kubernetes:/addons:/cri-o:/stable:/${CRIO_VERSION}/deb/Release.key | \
+  gpg --dearmor -o /etc/apt/keyrings/cri-o-apt-keyring.gpg
 
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://download.opensuse.org/repositories/isv:/kubernetes:/addons:/cri-o:/stable:/${CRIO_VERSION}/deb/ /" | \
+  tee /etc/apt/sources.list.d/cri-o.list
 
 apt-get update
-apt-get install -y containerd.io
+apt-get install -y cri-o
 
-# Configure containerd
-echo "Configuring containerd..."
-mkdir -p /etc/containerd
-containerd config default | tee /etc/containerd/config.toml
-
-# Enable SystemdCgroup
-sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-
-systemctl restart containerd
-systemctl enable containerd
+# Enable CRI-O
+systemctl enable crio
+systemctl start crio
 
 # Install kubeadm, kubelet, kubectl
 echo "Installing Kubernetes components v${KUBERNETES_VERSION}..."
