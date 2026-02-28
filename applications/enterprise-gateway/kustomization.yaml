@@ -23,7 +23,7 @@ resources:
   - base/clusterrole.yaml
   - base/clusterrolebinding.yaml
   - base/service.yaml
-  - overlays/pvc/kernel-specs-pvc.yaml
+  - overlays/pvc/kernel-pvc.yaml
   - overlays/configmap/tf-gpu-4GB.yaml
   - overlays/configmap/tf-gpu-8GB.yaml
   - overlays/configmap/pytorch-gpu-4GB.yaml

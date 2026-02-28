@@ -22,8 +22,10 @@ data:
       runtimeClassName: nvidia-cdi
       restartPolicy: Never
       serviceAccountName: "{{ kernel_service_account_name }}"
+      {% if kernel_gpu_type is defined %}
       nodeSelector:
         gpu-type: "{{ kernel_gpu_type }}"
+      {% endif %}
       {% if kernel_uid is defined or kernel_gid is defined %}
       securityContext:
         {% if kernel_uid is defined %}
@@ -93,9 +95,7 @@ data:
             },
             "debugger": true
         },
-        "env": {
-            "KERNEL_GPU_TYPE": "V100"
-        },
+        "env": {},
         "argv": [
             "python",
             "/usr/local/share/jupyter/kernels/pytorch_gpu_sharing_all/launch_kubernetes.py",

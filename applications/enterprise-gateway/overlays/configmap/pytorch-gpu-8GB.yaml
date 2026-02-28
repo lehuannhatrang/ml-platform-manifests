@@ -19,7 +19,6 @@ data:
         },
         "env": {
             "KERNEL_GPU_MEMORY": "7800",
-            "KERNEL_GPU_TYPE": "V100",
             "TF_FORCE_GPU_ALLOW_GROWTH": "true",
             "IPYTHONDIR": "/opt/custom_kernels/ipython_config"
         },
