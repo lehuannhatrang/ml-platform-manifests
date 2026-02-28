@@ -29,6 +29,7 @@ resources:
   - overlays/configmap/pytorch-gpu-4GB.yaml
   - overlays/configmap/pytorch-gpu-8GB.yaml
   - overlays/configmap/gpu-enforce-limit.yaml
+  - overlays/configmap/launch-k8s.yaml
   - overlays/migration-job/init-kernels.yaml
   - overlays/deployment/enterprise-gateway.yaml
   - overlays/kyverno/inject-jeg-env.yaml
