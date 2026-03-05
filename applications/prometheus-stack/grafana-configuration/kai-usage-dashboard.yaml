@@ -1,0 +1,326 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    grafana_dashboard: "1"
+  name: kai-scheduler-dashboard
+  namespace: monitoring
+data:
+  kai-scheduler.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 0,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "displayName": "of ${dynamic_quota}GiB Quota",
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 11,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "pluginVersion": "12.2.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "kai_queue_allocated_gpus{queue_name=~\"${queue}-queue\"}\r\n/ on(queue_name)\r\n(\r\n  (kai_queue_deserved_gpus{queue_name=~\"${queue}-queue\"} > 0)\r\n  or\r\n  vector(1)\r\n)",
+              "legendFormat": "usage",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Current Usage",
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decgbytes"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Quota"
+                },
+                "properties": [
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.showPoints",
+                    "value": "never"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Usage"
+                },
+                "properties": [
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 26
+                  },
+                  {
+                    "id": "custom.showPoints",
+                    "value": "never"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 13,
+            "x": 11,
+            "y": 0
+          },
+          "id": 3,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.2.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "kai_queue_allocated_gpus{queue_name=~\"${queue}-queue\"} * 32",
+              "legendFormat": "Usage",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "kai_queue_deserved_gpus{queue_name=~\"${queue}-queue\"} * 32",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "Quota",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Usage History",
+          "type": "timeseries"
+        }
+      ],
+      "preload": false,
+      "schemaVersion": 42,
+      "tags": [],
+      "templating": {
+        "list": [
+          {
+            "current": {
+              "text": "cluster-gpu-1",
+              "value": "cluster-gpu-1"
+            },
+            "definition": "label_values(cluster)",
+            "hide": 2,
+            "label": "Cluster",
+            "name": "cluster",
+            "options": [],
+            "query": {
+              "qryType": 1,
+              "query": "label_values(cluster)",
+              "refId": "PrometheusVariableQueryEditor-VariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "type": "query"
+          },
+          {
+            "current": {
+              "text": "anhvt-dcn-ssu-ac-kr",
+              "value": "anhvt-dcn-ssu-ac-kr"
+            },
+            "definition": "label_values(kai_queue_info{queue_name!~\"default-queue|default-parent-queue\"},queue_name)",
+            "hide": 2,
+            "includeAll": false,
+            "label": "Profile",
+            "name": "queue",
+            "options": [],
+            "query": {
+              "qryType": 1,
+              "query": "label_values(kai_queue_info{queue_name!~\"default-queue|default-parent-queue\"},queue_name)",
+              "refId": "PrometheusVariableQueryEditor-VariableQuery"
+            },
+            "refresh": 1,
+            "regex": "/^(.*)-queue$/",
+            "type": "query"
+          },
+          {
+            "current": {
+              "text": "4",
+              "value": "4"
+            },
+            "definition": "query_result(sum(kai_queue_deserved_gpus{queue_name=~\"${queue}-queue\"} * 32))",
+            "hide": 2,
+            "label": "dynamic_quota",
+            "name": "dynamic_quota",
+            "options": [],
+            "query": {
+              "qryType": 3,
+              "query": "query_result(sum(kai_queue_deserved_gpus{queue_name=~\"${queue}-queue\"} * 32))",
+              "refId": "PrometheusVariableQueryEditor-VariableQuery"
+            },
+            "refresh": 2,
+            "regex": "/\\} (.*?) /",
+            "type": "query"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "KAI Scheduler Monitoring (User View)",
+      "uid": "adcfdqx",
+      "version": 16
+    }
