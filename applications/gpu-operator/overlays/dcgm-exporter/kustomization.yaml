@@ -6,6 +6,7 @@ namespace: gpu-operator
 resources:
   - clusterrole/dra-clusterrole.yaml
   - daemonset/nvidia-dcgm-exporter.yaml
+  - service-monitor/service-monitor.yaml
 
 labels:
   - pairs:
