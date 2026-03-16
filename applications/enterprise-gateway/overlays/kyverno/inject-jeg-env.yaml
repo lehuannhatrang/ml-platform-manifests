@@ -46,3 +46,5 @@ spec:
                 value: "False"
               - name: JUPYTER_SERVER_APP_NOTEBOOK_STARTS_KERNEL
                 value: "False"
+              - name: KERNEL_WORKSPACE_PVC_NAME
+                value: "{{ request.object.spec.volumes[?contains(name, 'workspace')].persistentVolumeClaim.claimName | [0] }}"

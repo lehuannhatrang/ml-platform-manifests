@@ -23,7 +23,7 @@ data:
     spec:
       runtimeClassName: nvidia-cdi
       schedulerName: kai-scheduler
-      {if kernel_gpu_type is defined %}
+      {% if kernel_gpu_type is defined %}
       nodeSelector:
         gpu-type: "{{ kernel_gpu_type }}"
       {% endif %}
@@ -44,6 +44,11 @@ data:
       volumes:
       - name: custom-startup-scripts
         emptyDir: {}
+      {% if kernel_workspace_pvc_name is defined %}
+      - name: "{{ kernel_workspace_pvc_name }}"
+        persistentVolumeClaim:
+          claimName: "{{ kernel_workspace_pvc_name }}"
+      {% endif %}
       {% if kernel_volumes %}
         {% for volume in kernel_volumes %}
       - {{ volume }}
@@ -101,11 +106,15 @@ data:
         {% if kernel_working_dir %}
         workingDir: "{{ kernel_working_dir }}"
         {% endif %}
-        
+      
         # MOUNT THE SHARED VOLUME
         volumeMounts:
         - name: custom-startup-scripts
           mountPath: /opt/custom_kernels
+        {% if kernel_workspace_pvc_name is defined %}
+        - name: "{{ kernel_workspace_pvc_name }}"
+          mountPath: /home/jovyan
+        {% endif %}
         {% if kernel_volume_mounts %}
         {% for volume_mount in kernel_volume_mounts %}
         - {{ volume_mount }}
