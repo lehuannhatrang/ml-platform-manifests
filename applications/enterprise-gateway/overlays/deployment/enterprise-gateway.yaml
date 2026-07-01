@@ -15,7 +15,7 @@ metadata:
   name: enterprise-gateway
   namespace: enterprise-gateway
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       gateway-selector: enterprise-gateway
@@ -60,6 +60,8 @@ spec:
               value: python_kubernetes
             - name: EG_INHERITED_ENVS
               value: PATH
+            - name: EG_CLIENT_ENVS
+              value: "KERNEL_CHECKPOINT_NAME"
           image: elyra/enterprise-gateway:3.2.3
           imagePullPolicy: IfNotPresent
           name: enterprise-gateway
